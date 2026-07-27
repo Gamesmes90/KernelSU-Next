@@ -12,14 +12,14 @@ jobs:
           - name: Sync default branch (dev)
             run: gh repo sync $GITHUB_REPOSITORY
             env:
-              GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              GH_TOKEN: ${{ secrets.PAT_TOKEN }}
               
           - name: Sync legacy branch
             run: gh repo sync $GITHUB_REPOSITORY --branch legacy
             env:
-              GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
           - name: Sync sync-upstream branch
             run: gh repo sync $GITHUB_REPOSITORY --branch sync-upstream
             env:
-              GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              GH_TOKEN: ${{ secrets.PAT_TOKEN }}
