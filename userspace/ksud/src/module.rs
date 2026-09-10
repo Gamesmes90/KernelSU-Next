@@ -12,6 +12,7 @@ use is_executable::is_executable;
 use java_properties::PropertiesIter;
 use log::{debug, error, info, warn};
 use regex_lite::Regex;
+use serde::Deserialize;
 use unicode_normalization::UnicodeNormalization;
 
 use std::{
@@ -35,7 +36,7 @@ use crate::module::ModuleType::{Active, All};
 use std::os::unix::{prelude::PermissionsExt, process::CommandExt};
 
 const INSTALLER_CONTENT: &str = include_str!("./installer.sh");
-const MALWARE: &str = include_str!("../malware");
+const RISK: &str = include_str!("../risk.json");
 const INSTALL_MODULE_SCRIPT: &str = concatcp!(
     INSTALLER_CONTENT,
     "\n",
@@ -123,29 +124,37 @@ fn ensure_boot_completed() -> Result<()> {
     Ok(())
 }
 
-fn contains_malware(module_prop: &str) -> bool {
-    let malware: Vec<Vec<String>> = MALWARE
-        .lines()
-        .map(str::trim)
-        .filter(|word| !word.is_empty() && !word.starts_with('#'))
-        .map(normalize_malware_text)
-        .map(|word| word.split_whitespace().map(str::to_owned).collect())
-        .collect();
+#[derive(Deserialize)]
+struct RiskGroup {
+    reason: String,
+    patterns: Vec<String>,
+}
 
-    let normalized_properties: Vec<String> = normalize_malware_text(module_prop)
+fn contains_risk(module_prop: &str) -> Option<String> {
+    let risk: Vec<RiskGroup> = serde_json::from_str(RISK)
+        .expect("risk rule list must contain valid JSON");
+
+    let normalized_properties: Vec<String> = normalize_risk_text(module_prop)
         .split_whitespace()
         .map(str::to_owned)
         .collect();
 
-    malware.iter().any(|malware_words| {
-        !malware_words.is_empty()
-            && normalized_properties
-                .windows(malware_words.len())
-                .any(|window| window == malware_words.as_slice())
+    risk.iter().find_map(|group| {
+        group.patterns.iter().find_map(|pattern| {
+            let normalized_pattern: Vec<String> = normalize_risk_text(pattern)
+                .split_whitespace()
+                .map(str::to_owned)
+                .collect();
+            ( !normalized_pattern.is_empty()
+                && normalized_properties
+                    .windows(normalized_pattern.len())
+                    .any(|window| window == normalized_pattern.as_slice()))
+            .then_some(group.reason.clone())
+        })
     })
 }
 
-fn normalize_malware_text(text: &str) -> String {
+fn normalize_risk_text(text: &str) -> String {
     text.nfkc()
         .flat_map(|character| character.to_lowercase())
         .map(|character| {
@@ -574,8 +583,14 @@ fn install_module_to_system(zip: &str) -> Result<()> {
     zip_extract_file_to_memory(&zip_path, &entry_path, &mut buffer)?;
 
     let module_prop_text = String::from_utf8_lossy(&buffer);
-    if contains_malware(&module_prop_text) {
-        bail!("Possible malware/suspicious module detected!");
+    if let Some(reason) = contains_risk(&module_prop_text) {
+        println!("\n❌ Installation Blocked");
+        println!("┌────────────────────────────────");
+        println!("│ Module matched a configured security rule");
+        println!("│");
+        println!("│ Reason: {reason}");
+        println!("└─────────────────────────────────\n");
+        bail!("Module installation blocked");
     }
 
     let mut module_prop = HashMap::new();
