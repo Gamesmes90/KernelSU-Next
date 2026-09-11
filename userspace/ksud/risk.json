@@ -1,14 +1,14 @@
 [
 	{
-		"reason": "[MEDIUM RISK] AI-generated code - Possible bootloop - Break other modules",
+		"reason": "Possible bootloop | Break other modules | Signs of ai-generated code",
+		"severity": "medium",
 		"patterns": [
-			"integrity box",
-			"meowna",
-			"meowdump"
+			"integrity box"
 		]
 	},
 	{
-		"reason": "[MEDIUM RISK] Possible scammer - Closed-source binaries - Possible spyware",
+		"reason": "Closed-source binaries | Author known for possible scamming | Possible spyware",
+		"severity": "high",
 		"patterns": [
 			"root phantom fateh",
 			"fateh7",
@@ -16,42 +16,48 @@
 		]
 	},
 	{
-		"reason": "[LOW RISK] AI-generated code - Possible scammer",
+		"reason": "Signs of ai-generated code | Author known for possible scamming",
+		"severity": "low",
 		"patterns": [
-			"cleverestricky",
-			"tryigitx"
+			"cleverestricky"
 		]
 	},
 	{
-		"reason": "[LOW RISK] AI-generated code - Possible scammer",
+		"reason": "Signs of ai-generated code | Author known for possible scamming",
+		"severity": "low",
 		"patterns": [
-			"alwaysstrong",
-			"evoker",
-			"evoker0",
-			"evokerr",
-			"evokerrr"
+			"alwaysstrong"
 		]
 	},
 	{
-		"reason": "[MEDIUM RISK] AI-generated code - Possible bootloop - Break other modules",
+		"reason": "Possible bootloop | Break other modules | Signs of ai-generated code",
+		"severity": "medium",
 		"patterns": [
-			"resusfs",
-			"ahmed-alnassif"
+			"resusfs"
 		]
 	},
 	{
-		"reason": "[EXTREME RISK] Root-level backdoor - Spyware - SMS OTP grabber - Bank data hijacking",
+		"reason": "Root-level backdoor | Spyware | SMS OTP grabber | Bank data hijacking",
+		"severity": "extreme",
 		"patterns": [
 			"zygisk floating overlay menu",
 			"zygisk_floating_menu"
 		]
 	},
 	{
-		"reason": "[HIGH RISK] AI-generated code - Possible bootloop - Break other modules - Possible data corruption",
+		"reason": "Possible data corruption | Possible bootloop | Break other modules | Signs of ai-generated code",
+		"severity": "high",
 		"patterns": [
 			"zeromount",
-			"meta-zeromount",
-			"enginex0"
+			"meta-zeromount"
+		]
+	},
+	{
+		"reason": "Brick-level commands | Destroys system partitions | Author known for bricking devices",
+		"severity": "extreme",
+		"patterns": [
+			"fakelook1337",
+			"superpupermodule"
 		]
 	}
 ]

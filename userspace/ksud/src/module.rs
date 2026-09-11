@@ -124,13 +124,29 @@ fn ensure_boot_completed() -> Result<()> {
     Ok(())
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+enum RiskSeverity {
+    Low,
+    Medium,
+    High,
+    Extreme,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 struct RiskGroup {
     reason: String,
+    severity: RiskSeverity,
     patterns: Vec<String>,
 }
 
-fn contains_risk(module_prop: &str) -> Option<String> {
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct RiskMatch {
+    reason: String,
+    severity: RiskSeverity,
+}
+
+fn contains_risk(module_prop: &str) -> Option<RiskMatch> {
     let risk: Vec<RiskGroup> = serde_json::from_str(RISK)
         .expect("risk rule list must contain valid JSON");
 
@@ -145,13 +161,26 @@ fn contains_risk(module_prop: &str) -> Option<String> {
                 .split_whitespace()
                 .map(str::to_owned)
                 .collect();
-            ( !normalized_pattern.is_empty()
+            (!normalized_pattern.is_empty()
                 && normalized_properties
                     .windows(normalized_pattern.len())
                     .any(|window| window == normalized_pattern.as_slice()))
-            .then_some(group.reason.clone())
+                .then(|| RiskMatch {
+                    reason: group.reason.clone(),
+                    severity: group.severity,
+                })
         })
     })
+}
+
+fn print_risk_block(severity: RiskSeverity, reason: &str) {
+    println!("\n❌ Installation Blocked");
+    println!("┌────────────────────────────────");
+    println!("│ Module flagged by a security rule");
+    println!("│");
+    println!("│ Severity: {:?}", severity);
+    println!("│ Reason: {}", reason);
+    println!("└─────────────────────────────────\n");
 }
 
 fn normalize_risk_text(text: &str) -> String {
@@ -583,14 +612,40 @@ fn install_module_to_system(zip: &str) -> Result<()> {
     zip_extract_file_to_memory(&zip_path, &entry_path, &mut buffer)?;
 
     let module_prop_text = String::from_utf8_lossy(&buffer);
-    if let Some(reason) = contains_risk(&module_prop_text) {
-        println!("\n❌ Installation Blocked");
-        println!("┌────────────────────────────────");
-        println!("│ Module matched a configured security rule");
-        println!("│");
-        println!("│ Reason: {reason}");
-        println!("└─────────────────────────────────\n");
-        bail!("Module installation blocked");
+    if let Some(risk_match) = contains_risk(&module_prop_text) {
+        match risk_match.severity {
+            RiskSeverity::Low | RiskSeverity::Medium => {
+                println!("\n⚠️  Installation Paused");
+                println!("┌────────────────────────────────");
+                println!("│ Module flagged by a security rule");
+                println!("│");
+                println!("│ Severity: {:?}", risk_match.severity);
+                println!("│ Reason: {}", risk_match.reason);
+                println!("│");
+                println!("│ Press the volume-down key within 5 seconds to continue.");
+                println!("└─────────────────────────────────\n");
+
+                let volume_down = Command::new(assets::BUSYBOX_PATH)
+                    .args([
+                        "ash",
+                        "-c",
+                        "(timeout 5 /system/bin/getevent -ql 2>/dev/null || timeout 5 /system/bin/getevent -ql 2>/dev/null) | grep -q 'KEY_VOLUMEDOWN'",
+                    ])
+                    .status()
+                    .with_context(|| "Failed to wait for volume-down key")?;
+
+                if !volume_down.success() {
+                    print_risk_block(risk_match.severity, &risk_match.reason);
+                    bail!("Module installation blocked");
+                }
+
+                println!("✅ Installation allowed after user confirmation.\n");
+            }
+            RiskSeverity::High | RiskSeverity::Extreme => {
+                print_risk_block(risk_match.severity, &risk_match.reason);
+                bail!("Module installation blocked");
+            }
+        }
     }
 
     let mut module_prop = HashMap::new();
