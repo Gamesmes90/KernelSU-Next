@@ -7,26 +7,12 @@
 		]
 	},
 	{
-		"reason": "Closed-source binaries | Author known for possible scamming | Possible spyware",
+		"reason": "Closed-source binaries | Possible spyware",
 		"severity": "high",
 		"patterns": [
 			"root phantom fateh",
 			"fateh7",
 			"professorroot_dz"
-		]
-	},
-	{
-		"reason": "Signs of ai-generated code | Author known for possible scamming",
-		"severity": "low",
-		"patterns": [
-			"cleverestricky"
-		]
-	},
-	{
-		"reason": "Signs of ai-generated code | Author known for possible scamming",
-		"severity": "low",
-		"patterns": [
-			"alwaysstrong"
 		]
 	},
 	{
