@@ -19,6 +19,11 @@ jobs:
             env:
               GH_TOKEN: ${{ secrets.PAT_TOKEN }}
 
+          - name: Sync stable branch
+            run: gh repo sync $GITHUB_REPOSITORY --branch stable
+            env:
+              GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+
           - name: Sync sync-upstream branch
             run: gh repo sync $GITHUB_REPOSITORY --branch sync-upstream
             env:
