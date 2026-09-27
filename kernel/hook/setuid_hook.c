@@ -24,9 +24,8 @@
 #include "compat/kernel_compat.h"
 #ifdef CONFIG_KSU_SUSFS
 #include <linux/susfs_def.h>
+#include "selinux/selinux.h"
 #endif // #ifdef CONFIG_KSU_SUSFS
-
-extern void disable_seccomp(struct task_struct *tsk);
 
 #ifdef CONFIG_KSU_SUSFS
 static inline bool is_zygote_isolated_service_uid(uid_t uid)
@@ -90,12 +89,12 @@ extern void susfs_try_umount(uid_t uid);
 int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
 {
     // we rely on the fact that zygote always call setresuid(3) with same uids
-
+#ifdef CONFIG_KSU_SUSFS
     // We only interest in process spwaned by zygote
     if (!susfs_is_sid_equal(current_cred(), susfs_zygote_sid)) {
         return 0;
     }
-
+#endif // #ifdef CONFIG_KSU_SUSFS
 #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
     // Check if spawned process is isolated service first, and force to do umount if so  
     if (is_zygote_isolated_service_uid(new_uid)) {
