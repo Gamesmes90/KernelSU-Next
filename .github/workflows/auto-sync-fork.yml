@@ -28,3 +28,25 @@ jobs:
             run: gh repo sync $GITHUB_REPOSITORY --branch sync-upstream
             env:
               GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          
+          - name: Checkout repository
+            uses: actions/checkout@v4
+            with:
+              token: ${{ secrets.PAT_TOKEN }}
+              fetch-depth: 0 # Required to fetch all history and tags
+
+          - name: Sync tags from upstream
+            env:
+              GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+            run: |
+              # 1. Use GitHub CLI to dynamically find the parent (upstream) repository
+              UPSTREAM_REPO=$(gh api repos/$GITHUB_REPOSITORY --jq '.parent.full_name')
+              
+              # 2. Add the upstream remote
+              git remote add upstream https://github.com/$UPSTREAM_REPO.git
+              
+              # 3. Fetch all tags from the upstream repository
+              git fetch upstream --tags
+              
+              # 4. Push all fetched tags to your fork
+              git push origin --tags
