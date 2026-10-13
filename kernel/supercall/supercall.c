@@ -11,11 +11,11 @@
 #include <linux/uaccess.h>
 #include <linux/version.h>
 #include <linux/utsname.h> // utsname() and uts_sem
-#ifdef CONFIG_KSU_SUSFS
+#ifdef CONFIG_SUSFS
 #include <linux/namei.h>
 #include <linux/susfs.h>
 #include "objsec.h"
-#endif // #ifdef CONFIG_KSU_SUSFS
+#endif // #ifdef CONFIG_SUSFS
 
 #include "uapi/supercall.h"
 #include "supercall/internal.h"
@@ -27,7 +27,7 @@
 
 #include "sulog/event.h"
 
-#ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
+#ifdef CONFIG_SUSFS_TRY_UMOUNT
 
 #ifndef __weak
 #define __weak __attribute__((weak))
@@ -161,10 +161,10 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 		magic2);
 #endif
 
-#ifdef CONFIG_KSU_SUSFS
+#ifdef CONFIG_SUSFS
     // If magic2 is susfs and current process is root
     if (magic2 == SUSFS_MAGIC && current_uid().val == 0) {
-#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+#ifdef CONFIG_SUSFS_SUS_PATH
         if (cmd == CMD_SUSFS_ADD_SUS_PATH) {
             susfs_add_sus_path(arg);
             return 0;
@@ -173,14 +173,14 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
             susfs_add_sus_path_loop(arg);
             return 0;
         }
-#endif //#ifdef CONFIG_KSU_SUSFS_SUS_PATH
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+#endif //#ifdef CONFIG_SUSFS_SUS_PATH
+#ifdef CONFIG_SUSFS_SUS_MOUNT
         if (cmd == CMD_SUSFS_HIDE_SUS_MNTS_FOR_NON_SU_PROCS) {
             susfs_set_hide_sus_mnts_for_non_su_procs(arg);
             return 0;
         }
-#endif //#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-#ifdef CONFIG_KSU_SUSFS_SUS_KSTAT
+#endif //#ifdef CONFIG_SUSFS_SUS_MOUNT
+#ifdef CONFIG_SUSFS_SUS_KSTAT
         if (cmd == CMD_SUSFS_ADD_SUS_KSTAT) {
             susfs_add_sus_kstat(arg);
             return 0;
@@ -193,43 +193,43 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
             susfs_add_sus_kstat(arg);
             return 0;
         }
-#endif //#ifdef CONFIG_KSU_SUSFS_SUS_KSTAT
-#ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
+#endif //#ifdef CONFIG_SUSFS_SUS_KSTAT
+#ifdef CONFIG_SUSFS_TRY_UMOUNT
         if (cmd == CMD_SUSFS_ADD_TRY_UMOUNT) {
             susfs_add_try_umount(arg);
             return 0;
         }
-#endif //#ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
-#ifdef CONFIG_KSU_SUSFS_SPOOF_UNAME
+#endif //#ifdef CONFIG_SUSFS_TRY_UMOUNT
+#ifdef CONFIG_SUSFS_SPOOF_UNAME
         if (cmd == CMD_SUSFS_SET_UNAME) {
             susfs_set_uname(arg);
             return 0;
         }
-#endif //#ifdef CONFIG_KSU_SUSFS_SPOOF_UNAME
-#ifdef CONFIG_KSU_SUSFS_ENABLE_LOG
+#endif //#ifdef CONFIG_SUSFS_SPOOF_UNAME
+#ifdef CONFIG_SUSFS_ENABLE_LOG
         if (cmd == CMD_SUSFS_ENABLE_LOG) {
             susfs_enable_log(arg);
             return 0;
         }
-#endif //#ifdef CONFIG_KSU_SUSFS_ENABLE_LOG
-#ifdef CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
+#endif //#ifdef CONFIG_SUSFS_ENABLE_LOG
+#ifdef CONFIG_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
         if (cmd == CMD_SUSFS_SET_CMDLINE_OR_BOOTCONFIG) {
             susfs_set_cmdline_or_bootconfig(arg);
             return 0;
         }
-#endif //#ifdef CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
-#ifdef CONFIG_KSU_SUSFS_OPEN_REDIRECT
+#endif //#ifdef CONFIG_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
+#ifdef CONFIG_SUSFS_OPEN_REDIRECT
         if (cmd == CMD_SUSFS_ADD_OPEN_REDIRECT) {
             susfs_add_open_redirect(arg);
             return 0;
         }
-#endif //#ifdef CONFIG_KSU_SUSFS_OPEN_REDIRECT
-#ifdef CONFIG_KSU_SUSFS_SUS_MAP
+#endif //#ifdef CONFIG_SUSFS_OPEN_REDIRECT
+#ifdef CONFIG_SUSFS_SUS_MAP
         if (cmd == CMD_SUSFS_ADD_SUS_MAP) {
             susfs_add_sus_map(arg);
             return 0;
         }
-#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MAP
+#endif // #ifdef CONFIG_SUSFS_SUS_MAP
         if (cmd == CMD_SUSFS_ENABLE_AVC_LOG_SPOOFING) {
             susfs_set_avc_log_spoofing(arg);
             return 0;
@@ -248,7 +248,7 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
         }
         return 0;
     }
-#endif // #ifdef CONFIG_KSU_SUSFS
+#endif // #ifdef CONFIG_SUSFS
 
 	// Check if this is a request to install KSU fd
 	if (magic2 == KSU_INSTALL_MAGIC2) {

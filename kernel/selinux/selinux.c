@@ -255,7 +255,7 @@ bool is_init(const struct cred *cred)
     return is_sid_match(cred, cached_init_sid, INIT_CONTEXT);
 }
 
-#ifdef CONFIG_KSU_SUSFS
+#ifdef CONFIG_SUSFS
 #define KERNEL_INIT_DOMAIN "u:r:init:s0"
 #define KERNEL_ZYGOTE_DOMAIN "u:r:zygote:s0"
 #define KERNEL_PRIV_APP_DOMAIN "u:r:priv_app:s0:c512,c768"
@@ -349,7 +349,7 @@ void susfs_set_priv_app_sid(void)
 {
     susfs_set_sid(KERNEL_PRIV_APP_DOMAIN, &susfs_priv_app_sid);
 }
-#endif // #ifdef CONFIG_KSU_SUSFS
+#endif // #ifdef CONFIG_SUSFS
 
 void escape_to_root_for_adb_root(void)
 {
